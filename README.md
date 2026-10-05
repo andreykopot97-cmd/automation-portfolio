@@ -1,2 +1,25 @@
-# automation-portfolio
-Collection of my automation projects: workflows, scripts and integrations that save time and remove manual work. Built with Python, APIs, n8n/Make and AI tools. Each project includes setup instructions and a demo.
+# 🤖 Automation Portfolio
+
+A collection of automation projects I've built to solve real, repetitive tasks:
+from data pipelines and API integrations to AI-powered content workflows.
+
+## What's inside
+
+| Project | What it does | Tools |
+|---------|--------------|-------|
+| [project-name](./project-folder) | One-line result, e.g. "Auto-publishes daily reports to Slack" | Python, Google Sheets API |
+| [project-name](./project-folder) | ... | n8n, OpenAI API |
+
+## How each project is organized
+
+- `README.md`: the problem, the solution, and a workflow diagram or demo GIF
+- `.env.example`: required environment variables (no real keys!)
+- Setup and run instructions
+
+## Skills demonstrated
+
+API integrations · Workflow design · Python scripting · Error handling · AI/LLM tools
+
+## Contact
+
+📫 [andreykopot97@gmail.com / / Telegram: @andrey_kopot]
