@@ -1,0 +1,680 @@
+{
+  "name": "content maker",
+  "nodes": [
+    {
+      "parameters": {},
+      "type": "n8n-nodes-base.limit",
+      "typeVersion": 1,
+      "position": [
+        -448,
+        240
+      ],
+      "id": "87a1d69a-5026-4503-b4b6-04f36f487cd4",
+      "name": "Limit"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -192,
+        -48
+      ],
+      "id": "7a73ef93-7574-4626-9487-7adbc0ec07e2",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "bTisI8mcUH2hiGqF",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"angle\": { \"type\": \"string\" },\n    \"insights\": {\n      \"type\": \"array\",\n      \"items\": { \"type\": \"string\" },\n      \"minItems\": 2,\n      \"maxItems\": 5\n    },\n    \"hook\": { \"type\": \"string\" }\n  },\n  \"required\": [\"angle\", \"insights\", \"hook\"],\n  \"additionalProperties\": false\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -48,
+        -64
+      ],
+      "id": "b7bd07d0-5cc8-4869-afc2-cff8e1952a25",
+      "name": "Structured Output Parser"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-4o-mini",
+          "mode": "list",
+          "cachedResultName": "gpt-4o-mini"
+        },
+        "builtInTools": {},
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -192,
+        240
+      ],
+      "id": "2f391f0f-bbb2-4db2-96c9-27f5d4b283cb",
+      "name": "OpenAI Chat Model1",
+      "credentials": {
+        "openAiApi": {
+          "id": "bTisI8mcUH2hiGqF",
+          "name": "OpenAI account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "schemaType": "manual",
+        "inputSchema": "{\n  \"type\": \"object\",\n  \"properties\": {\n    \"linkedin\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"text\": { \"type\": \"string\" },\n        \"hashtags\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } }\n      },\n      \"required\": [\"text\", \"hashtags\"]\n    },\n    \"instagram\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"caption\": { \"type\": \"string\" },\n        \"hashtags\": { \"type\": \"array\", \"items\": { \"type\": \"string\" } }\n      },\n      \"required\": [\"caption\", \"hashtags\"]\n    },\n    \"email\": {\n      \"type\": \"object\",\n      \"properties\": {\n        \"subject\": { \"type\": \"string\" },\n        \"preview\": { \"type\": \"string\" },\n        \"body_html\": { \"type\": \"string\" }\n      },\n      \"required\": [\"subject\", \"preview\", \"body_html\"]\n    }\n  },\n  \"required\": [\"linkedin\", \"instagram\", \"email\"],\n  \"additionalProperties\": false\n}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.outputParserStructured",
+      "typeVersion": 1.3,
+      "position": [
+        -48,
+        240
+      ],
+      "id": "f4d52323-f1b7-49f3-a888-bc183cc21c9b",
+      "name": "Structured Output Parser1"
+    },
+    {
+      "parameters": {
+        "jsCode": "const o = $json.output;\nconst bannedWords = ['гарантований', 'безкоштовно назавжди', 'найкращий у світі'];\n\nconst errors = [];\n\nif (!o.linkedin?.text || o.linkedin.text.length > 3000) errors.push('linkedin text invalid/too long');\nif (!o.instagram?.caption || o.instagram.caption.length > 2200) errors.push('instagram caption invalid/too long');\nif (!o.email?.subject || o.email.subject.length > 100) errors.push('email subject too long');\nif (!o.email?.body_html) errors.push('email body missing');\n\nconst allText = `${o.linkedin?.text ?? ''} ${o.instagram?.caption ?? ''} ${o.email?.body_html ?? ''}`.toLowerCase();\nbannedWords.forEach(word => {\n  if (allText.includes(word.toLowerCase())) errors.push(`banned word: ${word}`);\n});\n\nreturn [{\n  json: {\n    ...$json,\n    validation_passed: errors.length === 0,\n    validation_errors: errors\n  }\n}];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        144,
+        -224
+      ],
+      "id": "0b4acabe-b4ef-4252-93b7-07659a269a9c",
+      "name": "Code in JavaScript"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "c2cf73bd-90cc-4ceb-be07-120f9e340042",
+              "leftValue": "={{ $json.validation_passed }}",
+              "rightValue": true,
+              "operator": {
+                "type": "boolean",
+                "operation": "equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.3,
+      "position": [
+        304,
+        -224
+      ],
+      "id": "3c5d36a1-2fee-464b-8f45-d56bfbcbee28",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": 9
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.4,
+      "position": [
+        -448,
+        -240
+      ],
+      "id": "5d640a81-78cd-45d6-ba39-562ade9c74e6",
+      "name": "Тригер на 9 ранку"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1P3OnqOqm3RxHN9j2VJmNmBITQn3RQlPl635gQrl8h5E",
+          "mode": "list",
+          "cachedResultName": "Content Ideas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P3OnqOqm3RxHN9j2VJmNmBITQn3RQlPl635gQrl8h5E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P3OnqOqm3RxHN9j2VJmNmBITQn3RQlPl635gQrl8h5E/edit#gid=0"
+        },
+        "filtersUI": {
+          "values": []
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        -448,
+        -64
+      ],
+      "id": "7290eafa-ab11-4218-a032-07e94b517f82",
+      "name": "Таблиця з темами",
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "K9TeCskF5Vdqsd8k",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 3
+          },
+          "conditions": [
+            {
+              "id": "e89ef502-99d4-4213-9979-10055723ea4c",
+              "leftValue": "={{ $json.status }}",
+              "rightValue": "queued",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.3,
+      "position": [
+        -448,
+        96
+      ],
+      "id": "c30d05e4-6290-4720-bc13-ed3c4a404031",
+      "name": "Фільтр на нові теми"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Тема: {{ $json.topic }}\nпроаналізуй тему і запропонуй найкращий кут подачі для аудиторії.\nВитягни 3 ключові інсайти та один чіпляючий hook (перше речення, що привертає увагу).",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -192,
+        -224
+      ],
+      "id": "de47604c-c5a6-4b71-b049-6f0aa5e7ea71",
+      "name": "Аналізуемо тему"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=Ти — контент-автор для салону краси [назва салону]. Пишеш пости для LinkedIn, Instagram та email-розсилки.\n\nТОН ГОЛОСУ:\n- Впевнений, теплий, трохи грайливий — як порада від подруги-майстра, а не рекламний буклет.\n- Без зверхності й \"вчительського\" тону — ти на рівних з клієнткою, не повчаєш.\n- Конкретика замість загальних фраз: цифри, терміни, деталі процедур, а не розмиті обіцянки.\n- Легкий гумор дозволений, якщо він природний і не заважає суті.\n\nЗАБОРОНЕНІ КЛІШЕ (не використовуй ці та подібні фрази):\n- \"Подаруй собі...\"\n- \"Ваша краса заслуговує...\"\n- \"Ми віримо, що кожна жінка...\"\n- \"Незабутні емоції\"\n- \"Ідеальний результат\"\n- \"Довірте себе професіоналам\"\n- \"Відчуй себе богинею/королевою\"\n- Будь-які фрази з надмірною кількістю прикметників поспіль (\"неймовірно\", \"вражаючий\", \"фантастичний\" в одному реченні)\n\nКут подачі: {{ $json.output.angle }}\nІнсайти: {{ $json.output.insights.join('; ') }}\nHook: {{ $json.output.hook }}\n\nПРИКЛАДИ СТИЛЮ (орієнтуйся саме на таку манеру):\n\nПриклад 1 (тема: ламінування вій):\n\"Ламінування вій тримається 6-8 тижнів — а не 'назавжди', як іноді пишуть. Головна помилка клієнток: йдуть на процедуру за день до весілля, хоча результат розкривається на 2-3 день, коли шар кератину остаточно 'сідає'. Робіть за тиждень, дякуватимете собі на фото.\"\n\nПриклад 2 (тема: акція на манікюр):\n\"До кінця тижня — друге покриття гель-лаком за half price, якщо йдете парою. Не тому що 'ваша краса варта знижки' (ви варта, але не в цьому суть) — просто у вівторок-середу в майстра реально вільні слоти, і нам вигідно їх заповнити. Чесний win-win.\"\n\nТепер створи контент у трьох форматах на основі наведених матеріалів, дотримуючись заданого тону і без жодного кліше зі списку:\n1. LinkedIn-пост (професійний тон, з хештегами) — тут дозволено трохи більше експертизи/цифр, менше грайливості\n2. Instagram-підпис (розмовний тон, з хештегами) — максимум легкості й \"своєї\" інтонації\n3. Email (тема листа, короткий preview-текст, HTML-тіло листа)\nПоверни ТІЛЬКИ валідний JSON-об'єкт, без markdown-розмітки, без ```json, без потрійних зворотних лапок навколо відповіді, без \"\".",
+        "hasOutputParser": true,
+        "batching": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.chainLlm",
+      "typeVersion": 1.9,
+      "position": [
+        -192,
+        80
+      ],
+      "id": "0820f967-b2a2-4f52-8f73-91ecc4828f0a",
+      "name": "Розписуемо тему",
+      "onError": "continueRegularOutput"
+    },
+    {
+      "parameters": {
+        "operation": "append",
+        "documentId": {
+          "__rl": true,
+          "value": "1P3OnqOqm3RxHN9j2VJmNmBITQn3RQlPl635gQrl8h5E",
+          "mode": "list",
+          "cachedResultName": "Content Ideas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P3OnqOqm3RxHN9j2VJmNmBITQn3RQlPl635gQrl8h5E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": 958234377,
+          "mode": "list",
+          "cachedResultName": "need review",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P3OnqOqm3RxHN9j2VJmNmBITQn3RQlPl635gQrl8h5E/edit#gid=958234377"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {},
+          "matchingColumns": [],
+          "schema": [
+            {
+              "id": "topic",
+              "displayName": "topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "validation_errors",
+              "displayName": "validation_errors",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        160,
+        -48
+      ],
+      "id": "4260e6ad-360d-47e4-a101-286500072620",
+      "name": "Чернетка",
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "K9TeCskF5Vdqsd8k",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "createFromText",
+        "content": "=  === LinkedIn ===\n  {{ $json.output.linkedin.text }}\n  Хештеги: {{ $json.output.linkedin.hashtags.join(' ') }}\n\n  === Instagram ===\n  {{ $json.output.instagram.caption }}\n  Хештеги: {{ $json.output.instagram.hashtags.join(' ') }}\n\n  === Email ===\n  Тема: {{ $json.output.email.subject }}\n  Preview: {{ $json.output.email.preview }}\n  {{ $json.output.email.body_html }}",
+        "name": "={{ $('Таблиця з темами').item.json.topic }} — текста {{ $now.format('YYYY-MM-DD') }}",
+        "driveId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "My Drive"
+        },
+        "folderId": {
+          "__rl": true,
+          "mode": "list",
+          "value": "root",
+          "cachedResultName": "/ (Root folder)"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleDrive",
+      "typeVersion": 3,
+      "position": [
+        480,
+        -224
+      ],
+      "id": "62acbff9-97df-4ffb-95e6-cdfc1fb81465",
+      "name": "Готові текса",
+      "retryOnFail": true,
+      "credentials": {
+        "googleDriveOAuth2Api": {
+          "id": "VWlyspHoeoXXRPhE",
+          "name": "Google Drive account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "289216834",
+        "text": "=  📝 Новий контент готовий: \"{{ $('Таблиця з темами').item.json.topic }}\"\n",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        480,
+        -48
+      ],
+      "id": "7980a165-7d16-4c23-abea-a96063d85926",
+      "name": "Оповіщення про готову тему",
+      "webhookId": "0c018048-cec8-4738-b169-e08e203a3f58",
+      "retryOnFail": true,
+      "credentials": {
+        "telegramApi": {
+          "id": "gtdk4Cawd3mbxV7j",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1P3OnqOqm3RxHN9j2VJmNmBITQn3RQlPl635gQrl8h5E",
+          "mode": "list",
+          "cachedResultName": "Content Ideas",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P3OnqOqm3RxHN9j2VJmNmBITQn3RQlPl635gQrl8h5E/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Лист1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1P3OnqOqm3RxHN9j2VJmNmBITQn3RQlPl635gQrl8h5E/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "status": "approved",
+            "publish_date": "={{ $now }}",
+            "topic": "={{ $('Таблиця з темами').item.json.topic }}"
+          },
+          "matchingColumns": [
+            "topic"
+          ],
+          "schema": [
+            {
+              "id": "id",
+              "displayName": "id",
+              "required": false,
+              "defaultMatch": true,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "topic",
+              "displayName": "topic",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true,
+              "removed": false
+            },
+            {
+              "id": "status",
+              "displayName": "status",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "created_at",
+              "displayName": "created_at",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "publish_date",
+              "displayName": "publish_date",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": true
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        480,
+        160
+      ],
+      "id": "8e343406-49d9-4e22-b323-8ae161f0e562",
+      "name": "Відмічаемо у таблиці",
+      "retryOnFail": true,
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "K9TeCskF5Vdqsd8k",
+          "name": "Google Sheets account"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Limit": {
+      "main": [
+        [
+          {
+            "node": "Аналізуемо тему",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Аналізуемо тему",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Аналізуемо тему",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model1": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "Розписуемо тему",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Structured Output Parser1": {
+      "ai_outputParser": [
+        [
+          {
+            "node": "Розписуемо тему",
+            "type": "ai_outputParser",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code in JavaScript": {
+      "main": [
+        [
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Готові текса",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Чернетка",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Тригер на 9 ранку": {
+      "main": [
+        [
+          {
+            "node": "Таблиця з темами",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Таблиця з темами": {
+      "main": [
+        [
+          {
+            "node": "Фільтр на нові теми",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Фільтр на нові теми": {
+      "main": [
+        [
+          {
+            "node": "Limit",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Аналізуемо тему": {
+      "main": [
+        [
+          {
+            "node": "Розписуемо тему",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Розписуемо тему": {
+      "main": [
+        [
+          {
+            "node": "Code in JavaScript",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Готові текса": {
+      "main": [
+        [
+          {
+            "node": "Оповіщення про готову тему",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Оповіщення про готову тему": {
+      "main": [
+        [
+          {
+            "node": "Відмічаемо у таблиці",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Відмічаемо у таблиці": {
+      "main": [
+        []
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "binaryMode": "separate",
+    "timeSavedMode": "fixed",
+    "errorWorkflow": "2w92siGWCm8jp0tx",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "026f2ce2-ac8a-4641-9f59-88a8a1580140",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "d4b81068fbf02b710d678c785712faf21f100675529d5aef7abfe1388f5033e7"
+  },
+  "nodeGroups": [],
+  "id": "u3XJswOLRzqV7N1E",
+  "tags": []
+}
