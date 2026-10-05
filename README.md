@@ -3,12 +3,6 @@
 A collection of automation projects I've built to solve real, repetitive tasks:
 from data pipelines and API integrations to AI-powered content workflows.
 
-## What's inside
-
-| Project | What it does | Tools |
-|---------|--------------|-------|
-| [project-name](./project-folder) | One-line result, e.g. "Auto-publishes daily reports to Slack" | Python, Google Sheets API |
-| [project-name](./project-folder) | ... | n8n, OpenAI API |
 
 ## How each project is organized
 
